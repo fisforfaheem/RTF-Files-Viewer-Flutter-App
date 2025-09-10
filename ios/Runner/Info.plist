@@ -45,5 +45,31 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<!-- File access permissions -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs access to your photo library to open RTF files.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access to scan RTF files.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs microphone access for audio files.</string>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>RTF Document</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.microsoft.word.rtf</string>
+				<string>public.rtf</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
