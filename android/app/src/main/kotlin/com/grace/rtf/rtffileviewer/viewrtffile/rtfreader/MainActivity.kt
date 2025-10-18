@@ -1,4 +1,4 @@
-package com.example.rtf_view
+package com.grace.rtf.rtffileviewer.viewrtffile.rtfreader
 
 import io.flutter.embedding.android.FlutterActivity
 

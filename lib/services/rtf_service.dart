@@ -129,12 +129,14 @@ class RtfService {
         if (fileEntity is File &&
             fileEntity.path.toLowerCase().endsWith('.rtf')) {
           final fileStats = await fileEntity.stat();
+          final content = await fileEntity.readAsString();
           rtfFiles.add(
             RtfFile(
               name: fileEntity.path.split('/').last,
               path: fileEntity.path,
               size: fileStats.size,
               lastModified: fileStats.modified,
+              content: content,
             ),
           );
         }
@@ -165,6 +167,21 @@ class RtfService {
       }
     } catch (e) {
       throw Exception('Failed to add file to recent files: $e');
+    }
+  }
+
+  // Clear all recent files
+  Future<void> clearRecentFiles() async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final recentFilesDir = Directory('${directory.path}/recent_files');
+
+      if (await recentFilesDir.exists()) {
+        await recentFilesDir.delete(recursive: true);
+        await recentFilesDir.create(recursive: true);
+      }
+    } catch (e) {
+      throw Exception('Failed to clear recent files: $e');
     }
   }
 }

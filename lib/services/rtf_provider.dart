@@ -94,4 +94,21 @@ class RtfProvider extends ChangeNotifier {
       rethrow;
     }
   }
+
+  // Clear recent files
+  Future<void> clearRecentFiles() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _rtfService.clearRecentFiles();
+      _recentFiles = [];
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

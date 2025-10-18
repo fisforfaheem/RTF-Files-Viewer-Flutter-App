@@ -10,7 +10,6 @@ class AppTheme {
         seedColor: AppColors.primary,
         primary: AppColors.primary,
         secondary: AppColors.accent,
-        background: AppColors.background,
         surface: AppColors.cardBackground,
       ),
       scaffoldBackgroundColor: AppColors.background,
@@ -25,14 +24,11 @@ class AppTheme {
           fontSize: 18,
           fontWeight: FontWeight.bold,
         ),
-        iconTheme: IconThemeData(
-          color: AppColors.textLight,
-          size: 24,
-        ),
+        iconTheme: IconThemeData(color: AppColors.textLight, size: 24),
       ),
       // Card properties
       cardColor: AppColors.cardBackground,
-      
+
       // Card theme
       cardTheme: const CardThemeData(
         elevation: 2,
@@ -43,7 +39,7 @@ class AppTheme {
         ),
         clipBehavior: Clip.antiAlias,
       ),
-      
+
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
@@ -51,18 +47,13 @@ class AppTheme {
           minimumSize: const Size(120, 48),
           elevation: 3,
           shadowColor: AppColors.shadow,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
-      
+
       // Icon theme
-      iconTheme: const IconThemeData(
-        color: AppColors.primary,
-        size: 24,
-      ),
-      
+      iconTheme: const IconThemeData(color: AppColors.primary, size: 24),
+
       // Floating action button theme
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: AppColors.primary,
@@ -127,7 +118,7 @@ class AppTheme {
         thickness: 1,
         space: 16,
       ),
-      
+
       // Input decoration theme
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -144,9 +135,12 @@ class AppTheme {
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: AppColors.primary, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
       ),
-      
+
       // List tile theme
       listTileTheme: const ListTileThemeData(
         contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),

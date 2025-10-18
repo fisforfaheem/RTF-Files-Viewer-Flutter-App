@@ -14,11 +14,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => RtfProvider()),
-      ],
+      providers: [ChangeNotifierProvider(create: (_) => RtfProvider())],
       child: MaterialApp(
-        title: 'RTF File Viewer',
+        title: 'RTF Viewer',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         home: const SplashScreen(),

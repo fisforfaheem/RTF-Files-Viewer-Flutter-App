@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 class RtfParser {
   // Singleton instance
   static final RtfParser _instance = RtfParser._internal();
@@ -12,7 +10,7 @@ class RtfParser {
       // Basic RTF parsing implementation
       // This is a simplified version that extracts plain text from RTF
       String plainText = _extractPlainText(rtfContent);
-      
+
       return RtfParseResult(
         plainText: plainText,
         hasImages: rtfContent.contains('\\pict'),
@@ -27,7 +25,7 @@ class RtfParser {
   String _extractPlainText(String rtfContent) {
     // Remove RTF control words and groups
     String text = rtfContent;
-    
+
     // Skip RTF header
     if (text.startsWith('{\\rtf1')) {
       int headerEnd = text.indexOf('\\');
@@ -35,36 +33,36 @@ class RtfParser {
         text = text.substring(headerEnd);
       }
     }
-    
+
     // Handle paragraph breaks before removing control words
     text = text.replaceAll('\\par', '\n\n');
     text = text.replaceAll('\\line', '\n');
-    
+
     // Handle tabs
     text = text.replaceAll('\\tab', '\t');
-    
+
     // Remove control words (\word)
     text = text.replaceAll(RegExp(r'\\[a-zA-Z0-9]+'), ' ');
-    
+
     // Remove control symbols (\;)
     text = text.replaceAll(RegExp(r'\\[^a-zA-Z0-9]'), ' ');
-    
+
     // Remove curly braces but preserve content structure
     text = _removeCurlyBraces(text);
-    
+
     // Handle special characters
     text = _handleSpecialCharacters(text);
-    
+
     // Remove extra whitespace but preserve paragraph breaks
     text = text.replaceAll(RegExp(r'[ \t]+'), ' ');
     text = text.replaceAll(RegExp(r'\n[ \t]+'), '\n');
     text = text.replaceAll(RegExp(r'[ \t]+\n'), '\n');
     text = text.replaceAll(RegExp(r'\n{3,}'), '\n\n');
     text = text.trim();
-    
+
     return text;
   }
-  
+
   /// Remove curly braces while preserving content structure
   String _removeCurlyBraces(String text) {
     // Simple braces removal for now
@@ -75,14 +73,11 @@ class RtfParser {
   /// Handle special RTF characters with improved support
   String _handleSpecialCharacters(String text) {
     // Handle Unicode characters
-    text = text.replaceAllMapped(
-      RegExp(r'\\u([0-9]+)\?'),
-      (match) {
-        int charCode = int.parse(match.group(1)!);
-        return String.fromCharCode(charCode);
-      },
-    );
-    
+    text = text.replaceAllMapped(RegExp(r'\\u([0-9]+)\?'), (match) {
+      int charCode = int.parse(match.group(1)!);
+      return String.fromCharCode(charCode);
+    });
+
     // Handle common RTF escape sequences with expanded character support
     final replacements = {
       '\\par': '\n',
@@ -103,11 +98,11 @@ class RtfParser {
       '\\{': '{', // opening brace
       '\\}': '}', // closing brace
     };
-    
+
     replacements.forEach((key, value) {
       text = text.replaceAll(key, value);
     });
-    
+
     return text;
   }
 
@@ -124,13 +119,13 @@ class RtfParser {
       r'\\fs\d+', // font size
       r'\\f\d+', // font
     ];
-    
+
     for (final pattern in formattingPatterns) {
       if (RegExp(pattern).hasMatch(rtfContent)) {
         return true;
       }
     }
-    
+
     return false;
   }
 }

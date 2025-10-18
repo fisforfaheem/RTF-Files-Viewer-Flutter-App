@@ -5,6 +5,7 @@ import 'package:rtf_view/constants/colors.dart';
 import 'package:rtf_view/models/rtf_file.dart';
 import 'package:rtf_view/screens/document_viewer_screen.dart';
 import 'package:rtf_view/services/rtf_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class RecentFilesScreen extends StatefulWidget {
   const RecentFilesScreen({super.key});
@@ -13,29 +14,13 @@ class RecentFilesScreen extends StatefulWidget {
   State<RecentFilesScreen> createState() => _RecentFilesScreenState();
 }
 
-class _RecentFilesScreenState extends State<RecentFilesScreen>
-    with TickerProviderStateMixin {
+class _RecentFilesScreenState extends State<RecentFilesScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  late AnimationController _fadeController;
-  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
-
-    // Initialize animations
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 600),
-      vsync: this,
-    );
-
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
-
-    _fadeController.forward();
 
     // Load recent files when screen is opened
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -51,7 +36,6 @@ class _RecentFilesScreenState extends State<RecentFilesScreen>
 
   @override
   void dispose() {
-    _fadeController.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -63,6 +47,7 @@ class _RecentFilesScreenState extends State<RecentFilesScreen>
         title: const Text('Recent Files'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
+        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -76,35 +61,20 @@ class _RecentFilesScreenState extends State<RecentFilesScreen>
       ),
       body: Column(
         children: [
-          // Animated search bar
-          FadeTransition(
-            opacity: _fadeAnimation,
-            child: SlideTransition(
-              position:
-                  Tween<Offset>(
-                    begin: const Offset(0.0, -0.3),
-                    end: Offset.zero,
-                  ).animate(
-                    CurvedAnimation(
-                      parent: _fadeController,
-                      curve: const Interval(0.2, 0.6, curve: Curves.easeOut),
-                    ),
-                  ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Search File Name...',
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.shade100,
-                  ),
+          // Search bar
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search File Name...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
                 ),
+                filled: true,
+                fillColor: Colors.grey.shade100,
               ),
             ),
           ),
@@ -172,19 +142,15 @@ class _RecentFilesScreenState extends State<RecentFilesScreen>
                   );
                 }
 
-                return FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: ListView.builder(
-                    itemCount: filteredFiles.length,
-                    itemBuilder: (context, index) {
-                      final file = filteredFiles[index];
-                      return _AnimatedFileItem(
-                        file: file,
-                        index: index,
-                        onTap: () => _openFile(context, file),
-                      );
-                    },
-                  ),
+                return ListView.builder(
+                  itemCount: filteredFiles.length,
+                  itemBuilder: (context, index) {
+                    final file = filteredFiles[index];
+                    return _FileItem(
+                      file: file,
+                      onTap: () => _openFile(context, file),
+                    );
+                  },
                 );
               },
             ),
@@ -234,144 +200,105 @@ class _RecentFilesScreenState extends State<RecentFilesScreen>
             title: const Text('Clear Recent Files'),
             onTap: () {
               Navigator.pop(context);
-              // Implement clear functionality
-              // This would require adding a clearRecentFiles method to RtfProvider
+              _clearRecentFiles(context);
             },
           ),
         ],
       ),
     );
   }
+
+  Future<void> _clearRecentFiles(BuildContext context) async {
+    try {
+      await Provider.of<RtfProvider>(context, listen: false).clearRecentFiles();
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Recent files cleared')));
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error clearing recent files: $e')),
+      );
+    }
+  }
 }
 
-class _AnimatedFileItem extends StatefulWidget {
+class _FileItem extends StatelessWidget {
   final RtfFile file;
-  final int index;
   final VoidCallback onTap;
 
-  const _AnimatedFileItem({
-    required this.file,
-    required this.index,
-    required this.onTap,
-  });
-
-  @override
-  State<_AnimatedFileItem> createState() => _AnimatedFileItemState();
-}
-
-class _AnimatedFileItemState extends State<_AnimatedFileItem>
-    with TickerProviderStateMixin {
-  late AnimationController _slideController;
-  late AnimationController _scaleController;
-  late Animation<Offset> _slideAnimation;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Slide animation with staggered delay
-    _slideController = AnimationController(
-      duration: const Duration(milliseconds: 400),
-      vsync: this,
-    );
-
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(-1.0, 0.0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _slideController, curve: Curves.easeOut));
-
-    // Scale animation for tap feedback
-    _scaleController = AnimationController(
-      duration: const Duration(milliseconds: 150),
-      vsync: this,
-    );
-
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
-      CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
-    );
-
-    // Start slide animation with delay based on index
-    Future.delayed(Duration(milliseconds: widget.index * 100), () {
-      if (mounted) {
-        _slideController.forward();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _slideController.dispose();
-    _scaleController.dispose();
-    super.dispose();
-  }
+  const _FileItem({required this.file, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return SlideTransition(
-      position: _slideAnimation,
-      child: FadeTransition(
-        opacity: _slideController,
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: GestureDetector(
-            onTapDown: (_) => _scaleController.forward(),
-            onTapUp: (_) => _scaleController.reverse(),
-            onTapCancel: () => _scaleController.reverse(),
-            onTap: widget.onTap,
-            child: AnimatedBuilder(
-              animation: _scaleAnimation,
-              builder: (context, child) =>
-                  Transform.scale(scale: _scaleAnimation.value, child: child),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 2,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
-                ),
-                child: ListTile(
-                  leading: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: AppColors.rtfIconBackground,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'RTF',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ),
-                  title: Text(
-                    widget.file.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  subtitle: Text(widget.file.formattedSize),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.share, color: Colors.grey),
-                    onPressed: () {
-                      // Implement share functionality
-                    },
-                  ),
-                ),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: ListTile(
+        onTap: onTap,
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: AppColors.rtfIconBackground,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: const Center(
+            child: Text(
+              'RTF',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
               ),
             ),
           ),
         ),
+        title: Text(file.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+        subtitle: Text(file.formattedSize),
+        trailing: PopupMenuButton<String>(
+          icon: const Icon(Icons.more_vert, color: Colors.grey),
+          onSelected: (value) {
+            if (value == 'share') {
+              _shareFile(context, file);
+            }
+          },
+          itemBuilder: (BuildContext context) => [
+            const PopupMenuItem<String>(
+              value: 'share',
+              child: ListTile(
+                leading: Icon(Icons.share, color: AppColors.primary),
+                title: Text('Share File'),
+                contentPadding: EdgeInsets.zero,
+              ),
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  Future<void> _shareFile(BuildContext context, RtfFile file) async {
+    try {
+      await Share.shareXFiles([
+        XFile(file.path),
+      ], subject: 'Shared RTF file: ${file.name}');
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error sharing file: $e')));
+    }
   }
 }

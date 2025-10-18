@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:rtf_view/constants/colors.dart';
 import 'package:rtf_view/screens/main_menu_screen.dart';
-import 'package:rtf_view/widgets/rtf_icon.dart';
+import 'package:rtf_view/widgets/rtf_logo_widget.dart'; // Import RtfLogoWidget
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -11,72 +12,24 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _fadeController;
-  late AnimationController _scaleController;
-  late AnimationController _slideController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
-  late Animation<Offset> _slideAnimation;
-
+class _SplashScreenState extends State<SplashScreen> {
   Timer? _navigationTimer;
   bool _hasNavigated = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeAnimations();
     _startNavigationTimer();
   }
 
   @override
   void dispose() {
     _navigationTimer?.cancel();
-    _fadeController.dispose();
-    _scaleController.dispose();
-    _slideController.dispose();
     super.dispose();
   }
 
-  void _initializeAnimations() {
-    // Fade in animation
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeIn));
-
-    // Scale animation for tap button
-    _scaleController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: _scaleController, curve: Curves.elasticOut),
-    );
-
-    // Slide animation for banner
-    _slideController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(-1.0, -1.0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _slideController, curve: Curves.easeOut));
-
-    // Start animations
-    _fadeController.forward();
-    _scaleController.forward();
-    _slideController.forward();
-  }
-
   void _startNavigationTimer() {
-    _navigationTimer = Timer(const Duration(seconds: 4), () {
+    _navigationTimer = Timer(const Duration(seconds: 60), () {
       if (!_hasNavigated && mounted) {
         _navigateToMainMenu();
       }
@@ -89,145 +42,125 @@ class _SplashScreenState extends State<SplashScreen>
 
     _navigationTimer?.cancel();
 
-    // Add a smooth exit animation
-    await _fadeController.reverse();
-
     if (!mounted) return;
 
     Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            const MainMenuScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          const begin = Offset(1.0, 0.0);
-          const end = Offset.zero;
-          const curve = Curves.easeInOut;
-
-          var tween = Tween(
-            begin: begin,
-            end: end,
-          ).chain(CurveTween(curve: curve));
-          var offsetAnimation = animation.drive(tween);
-
-          return SlideTransition(position: offsetAnimation, child: child);
-        },
-        transitionDuration: const Duration(milliseconds: 500),
-      ),
+      MaterialPageRoute(builder: (context) => const MainMenuScreen()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.splashBackground,
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // RTF Banner in corner with slide animation
+          // RTF Banner in top-left
           Positioned(
-            top: 0,
-            left: 0,
-            child: SlideTransition(
-              position: _slideAnimation,
+            top: 30,
+            left: -60,
+            child: Transform.rotate(
+              angle: -0.7, // Rotate by approximately -40 degrees
               child: Container(
-                width: 120,
-                height: 120,
-                decoration: const BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.only(
-                    bottomRight: Radius.circular(120),
-                  ),
+                width: 200,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8,
+                  horizontal: 20,
                 ),
-                child: const Center(
-                  child: Padding(
-                    padding: EdgeInsets.only(left: 10, top: 10),
-                    child: Text(
-                      'RTF',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300, // Light grey banner background
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'RTF',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary, // Red RTF text
                   ),
                 ),
               ),
             ),
           ),
+          // Main content
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Title
+                Text(
+                  'RTF File Viewer',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary, // Red color from image
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // RTF Logo Widget
+                const RtfLogoWidget(height: 120),
+                const SizedBox(height: 24),
+                // Subtitle
+                RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    style: TextStyle(
+                      fontSize: 16,
+                      color:
+                          AppColors.textPrimary, // Darker text color from image
+                    ),
+                    children: <TextSpan>[
+                      TextSpan(text: 'View '),
+                      TextSpan(
+                        text: 'RTF files',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      TextSpan(text: ' in Your\nSmart Phones with simple\n'),
+                      TextSpan(
+                        text: 'RTF File Viewer App.',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
 
-          // Main content with fade animation
-          FadeTransition(
-            opacity: _fadeAnimation,
-            child: Center(
+          // Tap to continue button
+          Positioned(
+            bottom: 80,
+            left: 0,
+            right: 0,
+            child: GestureDetector(
+              onTap: _navigateToMainMenu,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const RtfIcon(size: 120),
-                  const SizedBox(height: 24),
-                  Text(
-                    'RTF File Viewer',
-                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color:
+                          Colors.grey.shade300, // Light grey circle from image
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.arrow_forward,
+                      color: AppColors.primary, // Red arrow from image
+                      size: 30,
                     ),
                   ),
                   const SizedBox(height: 16),
                   const Text(
-                    'View RTF files in Your\nSmart Phones with simple\nRTF File Viewer App.',
-                    textAlign: TextAlign.center,
+                    'Tap to Continue',
                     style: TextStyle(
                       fontSize: 16,
-                      color: AppColors.textSecondary,
+                      color:
+                          AppColors.textPrimary, // Darker text color from image
                     ),
                   ),
                 ],
-              ),
-            ),
-          ),
-
-          // Tap to continue with scale animation
-          Positioned(
-            bottom: 60,
-            left: 0,
-            right: 0,
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: GestureDetector(
-                onTap: _navigateToMainMenu,
-                child: Column(
-                  children: [
-                    ScaleTransition(
-                      scale: _scaleAnimation,
-                      child: Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.arrow_forward,
-                          color: AppColors.primary,
-                          size: 30,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Tap to Continue',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ),
           ),
