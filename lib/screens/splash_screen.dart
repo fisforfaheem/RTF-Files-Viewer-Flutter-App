@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:rtf_view/constants/colors.dart';
 import 'package:rtf_view/screens/main_menu_screen.dart';
 import 'package:rtf_view/widgets/rtf_logo_widget.dart'; // Import RtfLogoWidget
